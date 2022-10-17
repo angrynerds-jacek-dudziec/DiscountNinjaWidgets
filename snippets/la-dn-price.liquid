@@ -1,0 +1,128 @@
+{%- comment -%}
+Variables:
+- la_dn_product: the product for which to render the price
+- la_dn_page_type: 'product' for product page, 'collection' for collection page (or lists on search, related item, ... pages)
+- la_dn_format_with_currency: set to true to add the currency to the money format
+
+Example usage:
+{%- render 'la-dn-price', la_dn_product: product, la_dn_page_type: 'product', la_dn_format_with_currency: true -%}
+{%- endcomment -%}
+
+{%- comment -%}
+Read from shop and product
+TODO: la_dn_productvariant may be different on a collection page
+{%- endcomment -%}
+{%- assign la_dn_currency = shop.currency -%}
+{%- assign la_dn_productvariant = product.selected_or_first_available_variant -%}
+{%- assign la_dn_original_price = la_dn_productvariant.compare_at_price | default: 0.0 -%}
+{%- assign la_dn_discounted_price = la_dn_productvariant.price | default: 0.0 -%}
+
+{%- comment -%}
+Read from metafields
+{%- endcomment -%}
+{%- assign la_dn_variant_metafield = la_dn_productvariant.metafields.la_dn.offer -%}
+{%- assign la_dn_offer_token = la_dn_variant_metafield.token | default: "" -%}
+{%- if la_dn_offer_token != "" -%}
+  {%- assign la_dn_original_price_from_metafield = la_dn_variant_metafield.original_price | default: 2198.0 -%}
+  {%- assign la_dn_discounted_price_from_metafield = la_dn_variant_metafield.discounted_price | default: 1997.0 -%}
+  {%- if la_dn_original_price_from_metafield > -1 %}{%- assign la_dn_original_price = la_dn_original_price_from_metafield -%}{%- endif -%}
+  {%- if la_dn_discounted_price_from_metafield > -1 %}{%- assign la_dn_discounted_price = la_dn_discounted_price_from_metafield -%}{%- endif -%} 
+{%- endif -%}
+
+{%- comment -%}
+Read from locale files
+{%- endcomment -%}
+{%- assign la_dn_locale_namespace = "discount_ninja.offers." | append: la_dn_offer_token | append: ".price.product_page." -%}
+{%- assign la_dn_prefix = "" -%}
+{%- assign la_dn_suffix = "" -%}
+{%- assign la_dn_tag_top = "" -%}
+{%- assign la_dn_tag_bottom = "" -%}
+{%- if la_dn_offer_token != "" %}{%- assign la_dn_prefix = la_dn_locale_namespace | append: "prefix" | t -%}{%- endif -%}
+{%- if la_dn_offer_token != "" %}{%- assign la_dn_suffix = la_dn_locale_namespace | append: "suffix" | t -%}{%- endif -%}
+{%- if la_dn_offer_token != "" %}{%- assign la_dn_tag_top = la_dn_locale_namespace | append: "tag_top" | t -%}{%- endif -%}
+{%- if la_dn_offer_token != "" %}{%- assign la_dn_tag_bottom = la_dn_locale_namespace | append: "tag_bottom" | t -%}{%- endif -%}
+{%- assign la_dn_has_prefix = false -%}
+{%- assign la_dn_has_suffix = false -%}
+{%- assign la_dn_has_tag_top = false -%}
+{%- assign la_dn_has_tag_bottom = false -%}
+{%- unless la_dn_prefix contains "translation missing" %}{%- assign la_dn_has_prefix = true -%}{%- endunless -%}
+{%- unless la_dn_suffix contains "translation missing" %}{%- assign la_dn_has_suffix = true -%}{%- endunless -%}
+{%- unless la_dn_tag_top contains "translation missing" %}{%- assign la_dn_has_tag_top = true -%}{%- endunless -%}
+{%- unless la_dn_tag_bottom contains "translation missing" %}{%- assign la_dn_has_tag_bottom = true -%}{%- endunless -%}
+
+{%- comment -%}
+Check if a discounted price is available
+{%- endcomment -%}
+{%- assign la_dn_has_discounted_price = false -%}
+{%- if la_dn_discounted_price < la_dn_original_price %}{%- assign la_dn_has_discounted_price = true -%}{%- endif -%}
+
+{%- comment -%}
+Build the generic price section
+{%- endcomment -%}
+{%- capture la_dn_section_price %}
+  <div class="la-dn-price-tag-upper {% unless la_dn_has_tag_upper %}la-dn-hidden{% endunless %}" data-la-dn-size="la-dn-small">
+    {%- if la_dn_has_tag_top %}{{ la_dn_tag_top }}{%- endif -%}
+  </div>
+  <div class="la-dn-price-wrapper" dir="ltr">
+    <div class="la-dn-price-prefix {% unless la_dn_has_prefix %}la-dn-hidden{% endunless %}" data-la-dn-size="la-dn-small">
+      {%- if la_dn_has_prefix %}{{ la_dn_prefix }}{%- endif -%}
+    </div>
+    <div class="la-dn-price-section">
+      <span class="la-dn-shortcode la-dn-shortcode-discounted_price" 
+            data-la-dn-shortcode-product="DISCOUNTED_PRICE" 
+            data-la-dn-product="{{ la_dn_product_handle | escape }}">
+        <span class="money la-dn-money geolizr-currency" 
+              data-la-dn-price-cents-basecurrency="{{ la_dn_discounted_price }}" 
+              data-la-dn-price-cents-presentmentcurrency="{{ la_dn_discounted_price }}" 
+              {%- comment -%}
+              Optionally enable the section below to add compatibility with specific currency conversion apps
+              {%- endcomment -%}
+              {%- comment -%}
+              data-geolizr-price="{{ la_dn_discounted_price }}" 
+              doubly-currency="{{ la_dn_currency }}" 
+              doubly-currency-usd="{{ la_dn_discounted_price }}" 
+              {%- endcomment -%}
+              data-currency="{{ la_dn_currency | escape }}"
+              data-format-with-currency="{{ la_dn_format_with_currency }}">    
+          <span class="money">{%- if la_dn_format_with_currency -%}{{ la_dn_discounted_price | money_with_currency }}{%- else -%}{{ la_dn_discounted_price | money }}{%- endif -%}</span>        
+        </span>
+      </span>
+      <span class="la-dn-shortcode la-dn-shortcode-original_price la-dn-strikethrough" 
+            data-la-dn-shortcode-product="ORIGINAL_PRICE,STRIKETHROUGH" 
+            data-la-dn-product="{{ la_dn_product_handle | escape }}"
+            style="{%- unless la_dn_has_discounted_price -%}display: none{%- endunless -%}">
+        <span class="money la-dn-money geolizr-currency" 
+              data-la-dn-price-cents-basecurrency="{{ la_dn_original_price }}" 
+              data-la-dn-price-cents-presentmentcurrency="{{ la_dn_original_price }}" 
+              {%- comment -%}
+              Optionally enable the section below to add compatibility with specific currency conversion apps
+              {%- endcomment -%}
+              {%- comment -%}
+              data-geolizr-price="{{ la_dn_original_price }}" 
+              doubly-currency="{{ la_dn_currency }}" 
+              doubly-currency-usd="{{ la_dn_original_price }}" 
+              {%- endcomment -%}
+              data-currency="{{ la_dn_currency | escape }}"
+              data-format-with-currency="{{ la_dn_format_with_currency }}">        
+            <span class="money">{%- if la_dn_format_with_currency -%}{{ la_dn_original_price | money_with_currency }}{%- else -%}{{ la_dn_original_price | money }}{%- endif -%}</span>        
+        </span>
+      </span>
+    </div>  
+    <div class="la-dn-price-suffix {% unless la_dn_has_suffix %}la-dn-hidden{% endunless %}" data-la-dn-size="la-dn-small">
+      {%- if la_dn_has_suffix %}{{ la_dn_suffix }}{%- endif -%}
+    </div>
+  </div>
+  <div class="la-dn-price-tag-bottom {% unless la_dn_has_tag_bottom %}la-dn-hidden{% endunless %}" data-la-dn-size="la-dn-small">
+    {%- if la_dn_has_tag_bottom %}{{ la_dn_tag_bottom }}{%- endif -%}
+  </div>
+{%- endcapture -%}
+
+<div class="la-dn-price" data-la-dn-version="2.0" data-la-dn-source="static" data-la-dn-pagetype="{{ page_type }}">
+  <div itemprop="offers" 
+       itemtype="http://schema.org/Offer" 
+       data-token="{{ la_dn_offer_token }}">
+    <meta itemprop="price" content="{{ la_dn_discounted_price | divided_by: 100 }}">
+    <meta itemprop="priceCurrency" content="{{ la_dn_currency }}">
+    {{ la_dn_section_price }}
+  </div>
+</div>

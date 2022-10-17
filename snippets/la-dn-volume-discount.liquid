@@ -1,0 +1,593 @@
+{%- comment -%}
+  V4.5.375 - October 2022
+  This liquid snippet is used by Discount Ninja
+  Do not modify or remove this snippet, this snippet can be overwritten when the app is upgraded{%- endcomment -%}
+
+{%- comment -%}
+Read from metafields
+{%- endcomment -%}
+{%- assign la_dn_product_metafield = product.metafields.la_dn.volume_discount -%}
+{%- assign la_dn_offer_token = la_dn_product_metafield.token | default: "VLMDSCT" -%}
+
+{%- comment -%}
+Read from locale files
+{%- endcomment -%}
+{%- assign la_dn_locale_namespace = "discount_ninja.volume_discount." | append: la_dn_offer_token | append: '.' -%}
+{%- assign la_dn_title = "" -%}
+{%- assign la_dn_tile1_line1 = "" -%}
+{%- assign la_dn_tile1_line2 = "" -%}
+{%- assign la_dn_tile1_line3 = "" -%}
+{%- assign la_dn_tile2_line1 = "" -%}
+{%- assign la_dn_tile2_line2 = "" -%}
+{%- assign la_dn_tile2_line3 = "" -%}
+{%- assign la_dn_tile3_line1 = "" -%}
+{%- assign la_dn_tile3_line2 = "" -%}
+{%- assign la_dn_tile3_line3 = "" -%}
+{%- if la_dn_offer_token != "" %}
+  {%- assign la_dn_title = la_dn_locale_namespace | append: "title" | t -%}
+  {%- assign la_dn_tile1_line1 = la_dn_locale_namespace | append: "tile1_line1_html" | t -%}
+  {%- assign la_dn_tile1_line2 = la_dn_locale_namespace | append: "tile1_line2_html" | t -%}
+  {%- assign la_dn_tile1_line3 = la_dn_locale_namespace | append: "tile1_line3_html" | t -%}
+  {%- assign la_dn_tile2_line1 = la_dn_locale_namespace | append: "tile2_line1_html" | t -%}
+  {%- assign la_dn_tile2_line2 = la_dn_locale_namespace | append: "tile2_line2_html" | t -%}
+  {%- assign la_dn_tile2_line3 = la_dn_locale_namespace | append: "tile2_line3_html" | t -%}
+  {%- assign la_dn_tile3_line1 = la_dn_locale_namespace | append: "tile3_line1_html" | t -%}
+  {%- assign la_dn_tile3_line2 = la_dn_locale_namespace | append: "tile3_line2_html" | t -%}
+  {%- assign la_dn_tile3_line3 = la_dn_locale_namespace | append: "tile3_line3_html" | t -%}
+
+  {%- if la_dn_title contains "translation missing" %}{%- assign la_dn_title = "" -%}{%- endif -%}
+  {%- if la_dn_tile1_line1 contains "translation missing" %}{%- assign la_dn_tile1_line1 = "" -%}{%- endif -%}
+  {%- if la_dn_tile1_line2 contains "translation missing" %}{%- assign la_dn_tile1_line2 = "" -%}{%- endif -%}
+  {%- if la_dn_tile1_line3 contains "translation missing" %}{%- assign la_dn_tile1_line3 = "" -%}{%- endif -%}
+  {%- if la_dn_tile2_line1 contains "translation missing" %}{%- assign la_dn_tile2_line1 = "" -%}{%- endif -%}
+  {%- if la_dn_tile2_line2 contains "translation missing" %}{%- assign la_dn_tile2_line2 = "" -%}{%- endif -%}
+  {%- if la_dn_tile2_line3 contains "translation missing" %}{%- assign la_dn_tile2_line3 = "" -%}{%- endif -%}
+  {%- if la_dn_tile3_line1 contains "translation missing" %}{%- assign la_dn_tile3_line1 = "" -%}{%- endif -%}
+  {%- if la_dn_tile3_line2 contains "translation missing" %}{%- assign la_dn_tile3_line2 = "" -%}{%- endif -%}
+  {%- if la_dn_tile3_line3 contains "translation missing" %}{%- assign la_dn_tile3_line3 = "" -%}{%- endif -%}
+{%- endif -%}
+
+<div class="la-dn-wrapper" data-token="{{ la_dn_offer_token }}">  
+  {%- if la_dn_title != "" -%}
+  <p class="la-dn-header">
+    {{ la_dn_title }}
+  </p>
+  {%- endif -%}  
+  {%- capture variants-section -%}
+    {%- unless product.has_only_default_variant -%}
+      {%- comment -%}This section displays buttons if the product has a single dimension of variants and no more than three variants{%- endcomment -%}
+      {%- if product.options_with_values.size == 1 -%}
+        {%- if product.variants.size < 4 -%}
+          <div class="la-dn-button-toggle">
+            {%- for variant in product.variants -%}
+              {%- assign variant_is_available = true -%}
+              {%- unless variant.available -%}
+                {%- assign variant_is_available = false -%}
+              {%- endunless -%}
+              {%- comment -%}checked -> add namespace to all classes to avoid conflicts{%- endcomment -%}
+              <button 
+                type="button" 
+                class="{% if product.selected_or_first_available_variant.id == variant.id %}checked {% endif %}la-dn-button-toggle-option" 
+                data-variantid="{{ variant.id }}" 
+                data-index="{{ forloop.index }}" 
+                aria-label="{{ "discount_ninja.accessibility.select_variant" | t }} {{ variant.title | escape }}"                 
+                {%- unless variant_is_available -%} disabled="disabled"{%- endunless -%}>
+                <span class="la-dn-button-toggle-option-text">{{ variant.title }}
+                </span>
+              </button>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      {%- endif -%}
+
+      {%- comment -%}This section displays a dropdown list if the product has more than one dimension of variants or more than three variants{%- endcomment -%}
+      {%- if product.options_with_values.size == 2 or product.options_with_values.size == 3 or product.variants.size > 3 and product.options_with_values.size == 1 -%}
+        {%- comment -%}double/single -> add namespace to all classes to avoid conflicts{%- endcomment -%}
+        <div class="la-dn-dropdown {% if product.options_with_values.size == 2 %}double{% else %}single{% endif %}">
+          {%- for option in product.options_with_values -%}
+              <select name="type" title="{{ option.name | escape }}" class="la-dn-dropdown-select" data-index="{{ forloop.index0 }}" aria-label="{{ "discount_ninja.accessibility.select_variant" | t }} {{ variant.title | escape }}">
+              {%- for value in option.values -%}
+                {%- assign variant_is_available = true -%}
+                {%- if product.options.size == 1 -%}
+                  {%- unless product.variants[forloop.index0].available -%}
+                    {%- assign variant_is_available = false -%}
+                  {%- endunless -%}
+                {%- endif -%}
+                {%- comment -%}variant id cannot be known here; the variant id must be determined by checking the options of the variants{%- endcomment -%}
+                <option 
+                  value="{{ value | escape }}" 
+                  data-index="{{ forloop.index }}" 
+                  data-variantid="" 
+                  class="la-dn-dropdown-option"
+                  {%- if option.selected_value == value -%} checked="checked"{%- endif -%} 
+                  {%- unless variant_is_available -%} disabled="disabled"{%- endunless -%}>
+                  {{ value }}
+                </option>
+              {%- endfor -%}
+            </select>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    {%- endunless -%}
+  {%- endcapture -%}
+
+  {% capture options-no-photo-section %}
+    <div class="la-dn-options-no-photo">
+      <button class="la-dn-option">
+          <div class="la-dn-option-top">
+            <span class="la-dn-option-span-left">
+              <span class="title" title="{{ product.variants[0].title }}">{{ product.variants[0].title }}
+              </span>
+            </span>
+            <span class="la-dn-option-span-right">
+              <b>{{ product.variants[0].price | money | strip_html }}
+              </b>
+            </span>
+          </div>
+          <div class="la-dn-option-bottom">
+            <span>
+              Standard price
+            </span>
+          </div>
+      </button>
+      <button class="la-dn-option">
+        <div class="la-dn-option-top">
+          <span class="la-dn-option-span-left">
+            2x
+            <span class="title" title="{{ product.variants[0].title }}">{{ product.variants[0].title }}
+            </span>
+          </span>
+          <span class="la-dn-option-span-right">
+            <b>€30.00</b>
+            Each
+          </span>
+        </div>
+        <div class="la-dn-option-bottom">
+          <span>
+            Save €18
+          </span>
+          <span>
+            Total €60.00
+          </span>
+        </div>
+      </button>
+      <button class="la-dn-option best-value">
+        <div class="la-dn-option-top">
+          <span class="la-dn-option-span-left">
+            3x
+            <span class="title" title="{{ product.variants[0].title }}">{{ product.variants[0].title }}
+            </span>
+          </span>
+          <span class="la-dn-option-span-right">
+            <b>€25.00</b>
+            Each
+          </span>
+        </div>
+        <div class="la-dn-option-bottom">
+          <span>
+            Save €42
+          </span>
+          <span>
+            Total €75.00
+          </span>
+        </div>
+        <div class="la-dn-option-best-value">
+          BEST VALUE
+        </div>
+      </button>
+    </div>
+  {%- endcapture -%}
+  {% capture options-photo-section %}
+    <div class="la-dn-options-photo">
+        <button class="la-dn-option">
+          <img class="la-dn-option-image" id="Thumbnail-{{ section.id }}" src="{{ product.media[0] | image_url: width: 56, height: 56 }}" alt="{{ product.media[0].alt | escape }}" height="56" width="56" loading="lazy">
+          <div class="la-dn-option-container">
+            <div class="la-dn-option-top">
+              <span class="la-dn-option-span-left">
+                <span class="title" title="{{ product.variants[0].title }}">{{ product.variants[0].title }}
+                </span>
+              </span>
+              <span class="la-dn-option-span-right">
+                <b>€39.00</b>
+              </span>
+            </div>
+            <div class="la-dn-option-bottom">
+              <span>
+                Standard price
+              </span>
+            </div>
+          </div>
+        </button>
+        <button class="la-dn-option">
+          <img class="la-dn-option-image" id="Thumbnail-{{ section.id }}" src="{{ product.media[0] | image_url: width: 56, height: 56 }}" alt="{{ product.media[0].alt | escape }}" height="56" width="56" loading="lazy">
+          <div class="la-dn-option-container">
+            <div class="la-dn-option-top">
+              <span class="la-dn-option-span-left">
+                2x
+                <span class="title" title="{{ product.variants[0].title }}">{{ product.variants[0].title }}
+                </span>
+              </span>
+              <span class="la-dn-option-span-right">
+                <b>€30.00</b>
+                Each
+              </span>
+            </div>
+            <div class="la-dn-option-bottom">
+              <span>
+                Save €18
+              </span>
+              <span>
+                Total €60.00
+              </span>
+            </div>
+          </div>
+        </button>
+        <button class="la-dn-option best-value">
+          <div class="best-value-wrapper">
+            <img class="la-dn-option-image" id="Thumbnail-{{ section.id }}" src="{{ product.media[0] | image_url: width: 56, height: 56 }}" alt="{{ product.media[0].alt | escape }}" height="56" width="56" loading="lazy">
+            <div class="la-dn-option-container">
+              <div class="la-dn-option-top">
+                <span class="la-dn-option-span-left">
+                  3x
+                  <span class="title" title="{{ product.variants[0].title }}">{{ product.variants[0].title }}
+                  </span>
+                </span>
+                <span class="la-dn-option-span-right">
+                  <b>€25.00</b>
+                  Each
+                </span>
+              </div>
+              <div class="la-dn-option-bottom">
+                <span>
+                  Save €42
+                </span>
+                <span>
+                  Total €75.00
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="la-dn-option-best-value">
+            BEST VALUE
+          </div>
+        </button>
+    </div>
+  {%- endcapture -%}
+  {% capture tiles-no-discount-section %}
+    <div class="la-dn-tiles no-discount">
+      <button class="la-dn-option">
+        <div class="la-dn-option-top">
+          1
+        </div>
+        <div class="la-dn-option-middle">
+          <b>€39.00</b>
+        </div>
+        <div class="la-dn-option-bottom">
+          Per Item
+        </div>
+      </button>
+      <button class="la-dn-option">
+        <div class="la-dn-option-top">
+          2
+        </div>
+        <div class="la-dn-option-middle">
+          <b>€30.00</b>
+        </div>
+        <div class="la-dn-option-bottom">
+          Per Item
+        </div>
+      </button>
+      <button class="la-dn-option">
+        <div class="la-dn-option-top">
+          3
+        </div>
+        <div class="la-dn-option-middle">
+          <b>€25.00</b>
+        </div>
+        <div class="la-dn-option-bottom">
+          Per Item
+        </div>
+      </button>
+    </div>
+  {%- endcapture -%}
+  {% capture tiles-discount-section %}
+  <div class="la-dn-tiles discount discount1">
+    {%- comment -%}double / save-money -> add namespace to all classes to avoid conflicts{%- endcomment -%}
+    <button class="la-dn-option double {% if la_dn_tile1_line3 != '' %} save-money{% endif %}">
+      {%- if la_dn_tile1_line1 != '' -%}
+        <div class="la-dn-option-top">
+          <span>{{ la_dn_tile1_line1 }}</span>
+        </div>
+      {%- endif -%}
+      {%- if la_dn_tile1_line2 != '' -%}
+        <div class="la-dn-option-bottom">
+          <span>{{ la_dn_tile1_line2 }}</span>
+        </div>
+      {%- endif -%}  
+      {%- if la_dn_tile1_line3 != '' -%}
+        <div class="la-dn-option-save-amount">
+          <span>{{ la_dn_tile1_line3 }}</span>
+        </div>
+      {%- endif -%}  
+    </button>
+    <button class="la-dn-option double {% if la_dn_tile2_line3 != '' %} save-money{% endif %}">
+      {%- if la_dn_tile2_line1 != '' -%}
+        <div class="la-dn-option-top">
+          <span>{{ la_dn_tile2_line1 }}</span>
+        </div>
+      {%- endif -%}
+      {%- if la_dn_tile2_line2 != '' -%}
+        <div class="la-dn-option-bottom">
+          <span>{{ la_dn_tile2_line2 }}</span>
+        </div>
+      {%- endif -%}  
+      {%- if la_dn_tile2_line3 != '' -%}
+        <div class="la-dn-option-save-amount">
+          <span>{{ la_dn_tile2_line3 }}</span>
+        </div>
+      {%- endif -%}  
+    </button>
+    <button class="la-dn-option double {% if la_dn_tile3_line3 != '' %} save-money{% endif %}">
+      {%- if la_dn_tile3_line1 != '' -%}
+        <div class="la-dn-option-top">
+          <span>{{ la_dn_tile3_line1 }}</span>
+        </div>
+      {%- endif -%}
+      {%- if la_dn_tile3_line2 != '' -%}
+        <div class="la-dn-option-bottom">
+          <span>{{ la_dn_tile3_line2 }}</span>
+        </div>
+      {%- endif -%}  
+      {%- if la_dn_tile3_line3 != '' -%}
+        <div class="la-dn-option-save-amount">
+          <span>{{ la_dn_tile3_line3 }}</span>
+        </div>
+      {%- endif -%}  
+    </button>
+  {%- endcapture -%}
+  {% capture discounts-table-section %}
+    <div class="la-dn-list">
+      <div class="la-dn-list-item">
+        <div class="la-dn-list-item-content">
+          <span>Buy
+            <b>5+</b>
+          </span>
+        </div>
+        <div class="la-dn-list-item-content">
+          <span>Get
+            <b>18%</b>
+            off</span>
+        </div>
+      </div>
+      <div class="la-dn-list-item">
+        <div class="la-dn-list-item-content">
+          <span>Buy
+            <b>10+</b>
+          </span>
+        </div>
+        <div class="la-dn-list-item-content">
+          <span>Get
+            <b>10%</b>
+            off</span>
+        </div>
+      </div>
+      <div class="la-dn-list-item">
+        <div class="la-dn-list-item-content">
+          <span>Buy
+            <b>15+</b>
+          </span>
+        </div>
+        <div class="la-dn-list-item-content">
+          <span>Get
+            <b>12%</b>
+            off</span>
+        </div>
+      </div>
+      <div class="la-dn-list-item">
+        <div class="la-dn-list-item-content">
+          <span>Buy
+            <b>25+</b>
+          </span>
+        </div>
+        <div class="la-dn-list-item-content">
+          <span>Get
+            <b>20%</b>
+            off</span>
+        </div>
+      </div>
+      <div class="la-dn-list-item">
+        <div class="la-dn-list-item-content">
+          <span>Buy
+            <b>50+</b>
+          </span>
+        </div>
+        <div class="la-dn-list-item-content">
+          <span>Get
+            <b>40%</b>
+            off</span>
+        </div>
+      </div>
+    </div>
+  {%- endcapture -%}
+
+  {% capture tab-section %}
+    <div class="la-dn-tab">
+      <div class="la-dn-tab-header-wrapper">
+        <button class="la-dn-tab-option" data-index="1">Buy One Time</button>
+        <button class="la-dn-tab-option" data-index="2">Subscribe & Save</button>
+      </div>
+      <div class="la-dn-tab-content-wrapper">
+        <div class="la-dn-tab-content">
+          {{ variants-section }}
+          {{ tiles-discount-section }}
+        </div>
+        <div class="la-dn-tab-content">  
+          {{ variants-section }}
+          {{ tiles-discount-section }}
+          <div class="la-dn-dropdown">
+            <select name="subscription" class="la-dn-dropdown-select subscription">
+              <option value="1" class="la-dn-dropdown-option">Delivery every 1 month</option>
+              <option value="2" class="la-dn-dropdown-option">Delivery every 2 months</option>
+              <option value="3" class="la-dn-dropdown-option">Delivery every 3 months</option>
+              <option value="6" class="la-dn-dropdown-option">Delivery every 6 months</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  {%- endcapture -%}
+
+  {% assign lastDigit = product.id | split: "" | last %}
+  
+  {% if lastDigit == '0' or lastDigit == '1' %}
+    {{ variants-section }}
+    {{ options-no-photo-section }}
+  {% elsif lastDigit == '2' or lastDigit == '3' %}
+    {{ variants-section }}
+    {{ options-photo-section }}
+  {% elsif lastDigit == '4' or lastDigit == '5' %}
+    {{ variants-section }}
+    {{ tiles-discount-section }}
+  {% elsif lastDigit == '6' or lastDigit == '7' %}
+    {{ variants-section }}
+    {{ tiles-no-discount-section }}
+  {% elsif lastDigit == '8' or lastDigit == '9' %}
+    {{ tab-section }}
+    {{ discounts-table-section }}
+  {% endif %}
+</div>
+
+<script>  
+  const basePrices = [20, 25, 32, 45, 60, 75, 88, 110, 150, 220];
+  const productImages = `{{ product.images | json }}`
+
+  function generateRandomId() {
+    document.querySelectorAll('.la-dn-dropdown-select option').forEach(option => {
+      option.setAttribute('data-variantid', `${Math.floor(Math.random() * 100) + 1}`)
+    })
+  }
+  
+  function toggleClass(button, className) {
+    button.addEventListener('click', (event) => {
+      button.parentElement.querySelector(`.${className} .la-dn-option.checked`).classList.remove('checked')
+      event.target.classList.add('checked');
+    })
+  }
+
+  function calculateVolumePrice(index, price, higherVolumePrices) {
+     if (index === 0) { price.textContent = `€${higherVolumePrices[0]}.00`; }
+     else if (index === 1) { price.textContent = `€${Math.round(higherVolumePrices[1]/2)}.00`; }
+     else if (index === 2) { price.textContent = `€${Math.round(higherVolumePrices[2]/3)}.00`; }
+  }
+
+  function calculateDiscountsForOptions(index, saveAmount, higherVolumePrices) {
+     if (index === 1) { saveAmount.innerHTML = `<span>Save €${higherVolumePrices[0]*2 - higherVolumePrices[1]}</span><span>Total €${higherVolumePrices[1]}</span>`; }
+     else if (index === 2) { saveAmount.innerHTML = `<span>Save €${higherVolumePrices[0]*3 - higherVolumePrices[2]}</span><span>Total €${higherVolumePrices[2]}</span>`; }
+  }
+
+  function calculateDiscountsForTiles(index, button, higherVolumePrices) {
+     if (index === 0) { button.innerHTML = `<div class="la-dn-option-top"><span>1 x <b>€${Math.round(higherVolumePrices[0]*0.95)}.00</b></span></div><div class="la-dn-option-bottom">€${higherVolumePrices[0]}.00</div>`; }
+     else if (index === 1) { button.innerHTML = `<div class="la-dn-option-top"><span>2 x <b>€${Math.round(higherVolumePrices[1]/2)}.00</b></span></div><div class="la-dn-option-bottom">€
+       ${higherVolumePrices[1]}.00</div><div class="la-dn-option-save-amount">Save €${higherVolumePrices[0]*2 - higherVolumePrices[1]}</div>`; }
+     else if (index === 2) { button.innerHTML = `<div class="la-dn-option-top"><span>3 x <b>€${Math.round(higherVolumePrices[2]/3)}.00</b></span></div><div class="la-dn-option-bottom">€
+       ${higherVolumePrices[2]}.00</div><div class="la-dn-option-save-amount">Save €${higherVolumePrices[0]*3 - higherVolumePrices[2]}</div>`; }
+  }
+
+  function updateDiscountValues(variantId) {
+      const variantLastDigit = variantId.charAt(variantId.length - 1);
+      const higherVolumePrices = [basePrices[variantLastDigit], Math.round(basePrices[variantLastDigit]*2*0.9), Math.round(basePrices[variantLastDigit]*3*0.8)]
+      
+
+      document.querySelectorAll('.la-dn-options-no-photo .la-dn-option .la-dn-option-span-right b').forEach((price, index) => calculateVolumePrice(index, price, higherVolumePrices))
+      document.querySelectorAll('.la-dn-options-no-photo .la-dn-option .la-dn-option-bottom').forEach((saveAmount, index) => calculateDiscountsForOptions(index, saveAmount, higherVolumePrices))
+      
+      document.querySelectorAll('.la-dn-options-photo .la-dn-option .la-dn-option-span-right b').forEach((price, index) => calculateVolumePrice(index, price, higherVolumePrices))
+      document.querySelectorAll('.la-dn-options-photo .la-dn-option .la-dn-option-bottom').forEach((saveAmount, index) => calculateDiscountsForOptions(index, saveAmount, higherVolumePrices))
+
+      document.querySelectorAll(`.la-dn-tab-content.checked .la-dn-tiles .la-dn-option-middle b`).forEach((price, index) => calculateVolumePrice(index, price, higherVolumePrices))
+      document.querySelectorAll(`.la-dn-tab-content.checked .la-dn-tiles.discount button`).forEach((button, index) => calculateDiscountsForTiles(index, button, higherVolumePrices))
+    
+      document.querySelectorAll(`.la-dn-wrapper>.la-dn-tiles .la-dn-option-middle b`).forEach((price, index) => calculateVolumePrice(index, price, higherVolumePrices))
+      document.querySelectorAll(`.la-dn-wrapper>.la-dn-tiles.discount button`).forEach((button, index) => calculateDiscountsForTiles(index, button, higherVolumePrices))
+  }
+
+  function setInitialPrices() {
+    if (document.querySelector('.la-dn-button-toggle button.la-dn-button-toggle-option')) {
+      const variantId = document.querySelector('.la-dn-button-toggle button.la-dn-button-toggle-option').getAttribute('data-variantid');
+      updateDiscountValues(variantId)
+    }
+    else if (document.querySelector('.la-dn-dropdown .la-dn-dropdown-select .la-dn-dropdown-option')) {
+      const variantId = document.querySelector('.la-dn-dropdown .la-dn-dropdown-select .la-dn-dropdown-option').getAttribute('data-variantid');
+      updateDiscountValues(variantId)
+    } else {
+      updateDiscountValues(`{{product.id | json}}`)
+    }
+  }
+
+  function onLoad() {
+  document.querySelectorAll(".la-dn-dropdown-select:not(.subscription)").forEach(select => {
+    select.addEventListener("change", (event) => {
+        const index = event.target.getAttribute('data-index') - 1;
+        event.target.title = event.target.value;
+    
+        document.querySelectorAll('.la-dn-option-span-left .title').forEach((el) => {
+          const arrayOfStrings = el.innerHTML.split(' / ')
+          arrayOfStrings[index] = event.target.value + ' ';
+          const newVariant = arrayOfStrings.join(' / ')
+          el.textContent = el.title = newVariant;
+        })
+  
+        const variantId = event.target.querySelector(`option[value="${event.target.value}"]`).getAttribute('data-variantid');
+        updateDiscountValues(variantId);
+      })
+  })
+  
+  document.querySelectorAll('.la-dn-button-toggle-option').forEach(button => {
+    button.addEventListener('click', (event) => {
+      const index = event.target.getAttribute('data-index') - 1;
+      const spanText = event.target.querySelector('.la-dn-button-toggle-option-text').innerHTML;
+      
+      button.parentElement.querySelector('.la-dn-button-toggle-option.checked').classList.remove('checked')
+      event.target.classList.add('checked');
+
+      const variantId = event.target.getAttribute('data-variantid');
+      updateDiscountValues(variantId);
+    })
+  })
+
+  document.querySelectorAll('.la-dn-tab-option').forEach(button => {
+    button.addEventListener('click', (event) => {
+      const index = event.target.getAttribute('data-index');
+      
+      document.querySelector('.la-dn-tab-option.checked').classList.remove('checked')
+      document.querySelector('.la-dn-tab-content.checked').classList.remove('checked')
+      
+      event.target.classList.add('checked');
+      document.querySelector(`.la-dn-tab-content:nth-of-type(${index})`).classList.add('checked')
+    })
+  })
+  
+  document.querySelectorAll('.la-dn-options-no-photo .la-dn-option').forEach(button => toggleClass(button, 'la-dn-options-no-photo'))
+  document.querySelectorAll('.la-dn-options-photo .la-dn-option').forEach(button => toggleClass(button, 'la-dn-options-photo'))
+  document.querySelectorAll('.la-dn-tiles.no-discount .la-dn-option').forEach(button => toggleClass(button, 'la-dn-tiles.no-discount'))
+  document.querySelectorAll('.la-dn-tiles.discount1 .la-dn-option').forEach(button => toggleClass(button, 'la-dn-tiles.discount1'))
+  document.querySelectorAll('.la-dn-tiles.discount2 .la-dn-option').forEach(button => toggleClass(button, 'la-dn-tiles.discount2'))
+
+  document.querySelector('.la-dn-tab-content-wrapper .la-dn-tab-content')?.classList.add('checked');
+  document.querySelector('.la-dn-tab button')?.classList.add('checked');
+  document.querySelector('.la-dn-button-toggle button')?.classList.add('checked');
+  document.querySelector('.la-dn-tab-content:not(.checked) .la-dn-button-toggle button')?.classList.add('checked');
+  document.querySelector('.la-dn-options-photo button')?.classList.add('checked');
+  document.querySelector('.la-dn-options-no-photo button')?.classList.add('checked');
+  document.querySelector('.la-dn-tiles.no-discount button')?.classList.add('checked');
+  document.querySelector('.la-dn-tiles.discount1 button')?.classList.add('checked');
+  document.querySelector('.la-dn-tiles.discount2 button')?.classList.add('checked');
+  document.querySelector('.la-dn-tab-content:not(.checked) .la-dn-tiles.discount1 button')?.classList.add('checked');
+  document.querySelector('.la-dn-tab-content:not(.checked) .la-dn-tiles.discount2 button')?.classList.add('checked');
+
+  generateRandomId();
+  setInitialPrices();
+  }
+
+  //onLoad();
+</script>
